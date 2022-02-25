@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class HelloTraceV1 {
+public class HelloTraceV2 {
 
     private static final String START_PREFIX = "-->";
     private static final String COMPLETE_PREFIX = "<--";
@@ -17,10 +17,21 @@ public class HelloTraceV1 {
     public TraceStatus begin(String message){
         TraceId traceId = new TraceId();
         long startTimeMs = System.currentTimeMillis();
-        log.info("[{}]{}{}", traceId.getId(), addSpace(START_PREFIX, traceId.getLevel()), message);
+        log.info("[{}] {}{}", traceId.getId(), addSpace(START_PREFIX, traceId.getLevel()), message);
         //로그 출력
         return new TraceStatus(traceId, startTimeMs, message);
     }
+
+    //V2에서 추가
+    public TraceStatus beginSync(TraceId beforeTraceId,String message){
+        //TraceId traceId = new TraceId();
+        TraceId nextId = beforeTraceId.createNextId();
+        long startTimeMs = System.currentTimeMillis();
+        log.info("[{}] {}{}", nextId.getId(), addSpace(START_PREFIX, nextId.getLevel()), message);
+        //로그 출력
+        return new TraceStatus(nextId, startTimeMs, message);
+    }
+
 
     public void end(TraceStatus status){
         complete(status, null);
@@ -43,7 +54,7 @@ public class HelloTraceV1 {
     private static String addSpace(String prefix, int level) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < level; i++) {
-            sb.append((i==level-1)? "|" + prefix :"|  ");
+            sb.append((i==level-1)? "|" + prefix: "|  ");
         }
         return sb.toString();
     }
